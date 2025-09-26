@@ -18,7 +18,7 @@ func ExampleNew() {
 func ExampleByteSize_Format() {
 	b := 1 * bytesize.TB // Create a new 1 terabyte ByteSize.
 	fmt.Printf("%s\n", b)
-	fmt.Printf("%s\n", b.Format("%.8f ", "petabyte", true))
+	fmt.Printf("%s\n", b.Format("%.8f", "petabyte", true))
 
 	// Output:
 	// 1.00TB
@@ -43,7 +43,7 @@ func ExampleParse() {
 	fmt.Printf("%s\n", b)
 
 	bytesize.LongUnits = true
-	bytesize.Format = "%.0f "
+	bytesize.Format = "%.0f"
 	fmt.Printf("%s\n", b)
 
 	// Output:

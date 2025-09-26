@@ -78,7 +78,7 @@ var globalFormatTable = []struct {
 }
 
 func Test_GlobalFormat(t *testing.T) {
-	Format = "%.0f "
+	Format = "%.0f"
 	LongUnits = true
 	for _, v := range globalFormatTable {
 		b := New(v.Bytes)
