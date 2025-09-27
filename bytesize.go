@@ -116,6 +116,7 @@ var localizedUnits = map[Locale]unitDefinitions{
 }
 
 func init() {
+	// add full eng parseMap to rus
 	for k, v := range localizedUnits[LocaleEN].parseMap {
 		if _, exists := localizedUnits[LocaleRU].parseMap[k]; !exists {
 			localizedUnits[LocaleRU].parseMap[k] = v
@@ -124,15 +125,15 @@ func init() {
 }
 
 var (
-	// Current locale
+	// CurrentLocale is the active locale.
 	CurrentLocale Locale = LocaleEN
 
-	// Use long units, such as "megabytes" instead of "MB".
+	// LongUnits reports whether long unit names (e.g. "megabytes") are used instead of short ones (e.g. "MB").
 	LongUnits bool = false
 
-	// Format var is a string format of bytesize output. The unit of measure will be appended
-	// to the end. Uses the same formatting options as the fmt package.
-	Format string = "%.2f"
+	// Format defines the printf-style format for byte size output.
+	// The unit will be appended at the end.
+	Format string = "%.2f "
 )
 
 // SetLocale sets the current locale for formatting and parsing
@@ -282,7 +283,7 @@ func (b ByteSize) formatWithUnits(format string, unit string, longUnits bool, un
 				unitStr = unitStr + "s"
 			}
 		}
-		return fmt.Sprintf(format+" %s", value, unitStr)
+		return fmt.Sprintf(format+"%s", value, unitStr)
 	}
 
 	return fmt.Sprintf(format+"%s", value, units.shortUnits[unitSize])

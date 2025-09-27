@@ -95,7 +95,7 @@ func TestRussianFormatting(t *testing.T) {
 	}()
 
 	SetLocale(LocaleRU)
-	Format = "%.0f"
+	Format = "%.0f "
 	LongUnits = true
 
 	tests := []struct {

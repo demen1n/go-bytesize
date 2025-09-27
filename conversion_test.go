@@ -37,14 +37,14 @@ var newTable = []struct {
 	Bytes  float64
 	Result string
 }{
-	{1, "1.00B"},
-	{1023, "1023.00B"},
-	{1024, "1.00KB"},
-	{1048576, "1.00MB"},
-	{1073741824, "1.00GB"},
-	{1099511627776, "1.00TB"},
-	{1125899906842624, "1.00PB"},
-	{1152921504606846976, "1.00EB"},
+	{1, "1.00 B"},
+	{1023, "1023.00 B"},
+	{1024, "1.00 KB"},
+	{1048576, "1.00 MB"},
+	{1073741824, "1.00 GB"},
+	{1099511627776, "1.00 TB"},
+	{1125899906842624, "1.00 PB"},
+	{1152921504606846976, "1.00 EB"},
 }
 
 func Test_New(t *testing.T) {
@@ -78,7 +78,14 @@ var globalFormatTable = []struct {
 }
 
 func Test_GlobalFormat(t *testing.T) {
-	Format = "%.0f"
+	originFormat := Format
+	originLongUnits := LongUnits
+	defer func() {
+		Format = originFormat
+		LongUnits = originLongUnits
+	}()
+
+	Format = "%.0f "
 	LongUnits = true
 	for _, v := range globalFormatTable {
 		b := New(v.Bytes)
@@ -86,8 +93,6 @@ func Test_GlobalFormat(t *testing.T) {
 			t.Fatalf("Expected %s, received %s", v.Result, b)
 		}
 	}
-	Format = "%.2f"
-	LongUnits = false
 }
 
 var parseTable = []struct {
@@ -95,16 +100,16 @@ var parseTable = []struct {
 	Result string
 	Fail   bool
 }{
-	{"1B", "1.00B", false},
-	{"1 B", "1.00B", false},
-	{"1 byte", "1.00B", false},
-	{"2 bytes", "2.00B", false},
-	{"1B ", "1.00B", false},
-	{" 1 B ", "1.00B", false},
-	{"1023B", "1023.00B", false},
-	{"1024B", "1.00KB", false},
+	{"1B", "1.00 B", false},
+	{"1 B", "1.00 B", false},
+	{"1 byte", "1.00 B", false},
+	{"2 bytes", "2.00 B", false},
+	{"1B ", "1.00 B", false},
+	{" 1 B ", "1.00 B", false},
+	{"1023B", "1023.00 B", false},
+	{"1024B", "1.00 KB", false},
 	{"1KB 1023B", "", true},
-	{"1.5GB", "1.50GB", false},
+	{"1.5GB", "1.50 GB", false},
 	{"1", "", true},
 }
 
@@ -160,9 +165,9 @@ var mathTable = []struct {
 	B2       ByteSize
 	Result   string
 }{
-	{1024, '+', 1024, "2.00KB"},
-	{1073741824, '+', 10485760, "1.01GB"},
-	{1073741824, '-', 536870912, "512.00MB"},
+	{1024, '+', 1024, "2.00 KB"},
+	{1073741824, '+', 10485760, "1.01 GB"},
+	{1073741824, '-', 536870912, "512.00 MB"},
 }
 
 func Test_Math(t *testing.T) {

@@ -11,17 +11,17 @@ func ExampleNew() {
 	fmt.Printf("%s", b)
 
 	// Output:
-	// 1.00KB
+	// 1.00 KB
 }
 
 // Demonstrates using different output formatting and units.
 func ExampleByteSize_Format() {
 	b := 1 * bytesize.TB // Create a new 1 terabyte ByteSize.
 	fmt.Printf("%s\n", b)
-	fmt.Printf("%s\n", b.Format("%.8f", "petabyte", true))
+	fmt.Printf("%s\n", b.Format("%.8f ", "petabyte", true))
 
 	// Output:
-	// 1.00TB
+	// 1.00 TB
 	// 0.00097656 petabytes
 }
 
@@ -32,7 +32,7 @@ func ExampleNew_math() {
 	fmt.Printf("%s", sum)
 
 	// Output:
-	// 5.00KB
+	// 5.00 KB
 }
 
 func ExampleParse() {
@@ -43,11 +43,11 @@ func ExampleParse() {
 	fmt.Printf("%s\n", b)
 
 	bytesize.LongUnits = true
-	bytesize.Format = "%.0f"
+	bytesize.Format = "%.0f "
 	fmt.Printf("%s\n", b)
 
 	// Output:
-	// 1.00TB
-	// 3.00PB
+	// 1.00 TB
+	// 3.00 PB
 	// 3 petabytes
 }
