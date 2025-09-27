@@ -126,14 +126,14 @@ func init() {
 
 var (
 	// CurrentLocale is the active locale.
-	CurrentLocale Locale = LocaleEN
+	CurrentLocale = LocaleEN
 
 	// LongUnits reports whether long unit names (e.g. "megabytes") are used instead of short ones (e.g. "MB").
-	LongUnits bool = false
+	LongUnits = false
 
 	// Format defines the printf-style format for byte size output.
 	// The unit will be appended at the end.
-	Format string = "%.2f "
+	Format = "%.2f "
 )
 
 // SetLocale sets the current locale for formatting and parsing
@@ -157,8 +157,8 @@ func parseWithLocale(s string, locale Locale) (ByteSize, error) {
 	for i, r := range s {
 		if !unicode.IsDigit(r) && r != '.' {
 			// Split the string by digit and size designator, remove whitespace
-			split = append(split, strings.TrimSpace(string(s[:i])))
-			split = append(split, strings.TrimSpace(string(s[i:])))
+			split = append(split, strings.TrimSpace(s[:i]))
+			split = append(split, strings.TrimSpace(s[i:]))
 			break
 		}
 	}
@@ -192,7 +192,8 @@ func Parse(s string) (ByteSize, error) {
 	return bs, err
 }
 
-// Satisfy the flag package Value interface.
+// Set parses s and sets the value of b.
+// It implements the flag.Value interface.
 func (b *ByteSize) Set(s string) error {
 	bs, err := Parse(s)
 	if err != nil {
@@ -202,29 +203,32 @@ func (b *ByteSize) Set(s string) error {
 	return nil
 }
 
-// Satisfy the pflag package Value interface.
+// Type returns the type name for b.
+// It implements the flag.Value interface.
 func (b *ByteSize) Type() string { return "byte_size" }
 
-// Satisfy the encoding.TextUnmarshaler interface.
+// UnmarshalText parses text and sets the value of b.
+// It implements the encoding.TextUnmarshaler interface.
 func (b *ByteSize) UnmarshalText(text []byte) error {
 	return b.Set(string(text))
 }
 
-// Satisfy the flag package Getter interface.
-func (b *ByteSize) Get() interface{} { return ByteSize(*b) }
+// Get returns the value of b.
+// It implements the flag.Getter interface.
+func (b *ByteSize) Get() interface{} { return b }
 
 // New returns a new ByteSize type set to s.
 func New(s float64) ByteSize {
 	return ByteSize(s)
 }
 
-// Returns a string representation of b with the specified formatting and units.
-func (b ByteSize) Format(format string, unit string, longUnits bool) string {
+// Format returns a string representation of b using the given format, unit, and unit style.
+func (b *ByteSize) Format(format string, unit string, longUnits bool) string {
 	return b.formatWithLocale(format, unit, longUnits, CurrentLocale)
 }
 
-// formatWithLocale returns a string representation using the specified locale
-func (b ByteSize) formatWithLocale(format string, unit string, longUnits bool, locale Locale) string {
+// formatWithLocale returns a string representation using the specified locale&
+func (b *ByteSize) formatWithLocale(format string, unit string, longUnits bool, locale Locale) string {
 	units, ok := localizedUnits[locale]
 	if !ok {
 		locale = LocaleEN
@@ -235,16 +239,18 @@ func (b ByteSize) formatWithLocale(format string, unit string, longUnits bool, l
 }
 
 // String returns the string form of b using the package global options
-func (b ByteSize) String() string {
+func (b *ByteSize) String() string {
 	return b.stringWithLocale(CurrentLocale)
 }
 
 // stringWithLocale returns the string form using the specified locale
-func (b ByteSize) stringWithLocale(locale Locale) string {
+func (b *ByteSize) stringWithLocale(locale Locale) string {
 	return b.formatWithLocale(Format, "", LongUnits, locale)
 }
 
-func (b ByteSize) formatWithUnits(format string, unit string, longUnits bool, units unitDefinitions) string {
+func (b *ByteSize) formatWithUnits(format string, unit string, longUnits bool, units unitDefinitions) string {
+	val := *b
+
 	var unitSize ByteSize
 	if unit != "" {
 		var ok bool
@@ -254,33 +260,32 @@ func (b ByteSize) formatWithUnits(format string, unit string, longUnits bool, un
 		}
 	} else {
 		switch {
-		case b >= EB:
+		case val >= EB:
 			unitSize = EB
-		case b >= PB:
+		case val >= PB:
 			unitSize = PB
-		case b >= TB:
+		case val >= TB:
 			unitSize = TB
-		case b >= GB:
+		case val >= GB:
 			unitSize = GB
-		case b >= MB:
+		case val >= MB:
 			unitSize = MB
-		case b >= KB:
+		case val >= KB:
 			unitSize = KB
 		default:
 			unitSize = B
 		}
 	}
 
-	value := float64(b) / float64(unitSize)
+	value := float64(val) / float64(unitSize)
 
 	if longUnits {
 		unitStr := units.longUnits[unitSize]
-		// russian plural form based on the number
 		if CurrentLocale == LocaleRU {
 			unitStr = getRussianPlural(value, unitSize)
 		} else if CurrentLocale == LocaleEN {
 			if value > 0 && value != 1 {
-				unitStr = unitStr + "s"
+				unitStr += "s"
 			}
 		}
 		return fmt.Sprintf(format+"%s", value, unitStr)
