@@ -1,7 +1,7 @@
 // Package bytesize provides functionality for measuring and formatting  byte
 // sizes.
 //
-// You can also perfom mathmatical operation with ByteSize's and the result
+// You can also perform mathematical operation with ByteSize's and the result
 // will be a valid ByteSize with the correct size suffix.
 package bytesize
 
@@ -130,7 +130,7 @@ var (
 	// Use long units, such as "megabytes" instead of "MB".
 	LongUnits bool = false
 
-	// String format of bytesize output. The unit of measure will be appended
+	// Format var is a string format of bytesize output. The unit of measure will be appended
 	// to the end. Uses the same formatting options as the fmt package.
 	Format string = "%.2f"
 )
