@@ -144,6 +144,7 @@ var (
 	// Format defines the printf-style format for byte size output.
 	// The unit will be appended at the end. Note: for compatibility with long units,
 	// this should include a trailing space when using long units.
+	// Added whitespace in the end of format string instead of original lib.
 	Format = "%.2f "
 )
 
