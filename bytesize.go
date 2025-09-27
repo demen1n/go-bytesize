@@ -1,8 +1,18 @@
-// Package bytesize provides functionality for measuring and formatting  byte
-// sizes.
+// Package bytesize provides functionality for measuring and formatting byte
+// sizes with localization support.
 //
-// You can also perform mathematical operation with ByteSize's and the result
+// This package is a fork of the original bytesize library with added
+// internationalization features, including:
+//   - Multi-language support (English, Russian)
+//   - Proper plural forms for different languages
+//   - Backward compatibility with the original API
+//   - Extended parsing capabilities
+//
+// You can also perform mathematical operations with ByteSize's and the result
 // will be a valid ByteSize with the correct size suffix.
+//
+// Original work: https://github.com/inhies/go-bytesize
+// Fork additions: localization, Russian language support, improved formatting
 package bytesize
 
 import (
@@ -125,25 +135,27 @@ func init() {
 }
 
 var (
-	// CurrentLocale is the active locale.
+	// CurrentLocale is the active locale for parsing and formatting.
 	CurrentLocale = LocaleEN
 
 	// LongUnits reports whether long unit names (e.g. "megabytes") are used instead of short ones (e.g. "MB").
 	LongUnits = false
 
 	// Format defines the printf-style format for byte size output.
-	// The unit will be appended at the end.
+	// The unit will be appended at the end. Note: for compatibility with long units,
+	// this should include a trailing space when using long units.
 	Format = "%.2f "
 )
 
-// SetLocale sets the current locale for formatting and parsing
+// SetLocale sets the current locale for formatting and parsing.
+// If the locale is not supported, the current locale remains unchanged.
 func SetLocale(locale Locale) {
 	if _, exists := localizedUnits[locale]; exists {
 		CurrentLocale = locale
 	}
 }
 
-// parseWithLocale parses a byte size string using the specified locale
+// parseWithLocale parses a byte size string using the specified locale.
 func parseWithLocale(s string, locale Locale) (ByteSize, error) {
 	units, ok := localizedUnits[locale]
 	if !ok {
@@ -187,9 +199,14 @@ func parseWithLocale(s string, locale Locale) (ByteSize, error) {
 // a unit suffix, such as "1024B" or "1 MB". Valid byte units are "B", "KB",
 // "MB", "GB", "TB", "PB" and "EB". You can also use the long
 // format of units, such as "kilobyte" or "kilobytes".
+// For Russian locale, Russian units are also supported: "Б", "КБ", "МБ", etc.
 func Parse(s string) (ByteSize, error) {
-	bs, err := parseWithLocale(s, CurrentLocale)
-	return bs, err
+	return parseWithLocale(s, CurrentLocale)
+}
+
+// ParseWithLocale parses a byte size string using the specified locale.
+func ParseWithLocale(s string, locale Locale) (ByteSize, error) {
+	return parseWithLocale(s, locale)
 }
 
 // Set parses s and sets the value of b.
@@ -205,7 +222,7 @@ func (b *ByteSize) Set(s string) error {
 
 // Type returns the type name for b.
 // It implements the flag.Value interface.
-func (b *ByteSize) Type() string { return "byte_size" }
+func (b ByteSize) Type() string { return "byte_size" }
 
 // UnmarshalText parses text and sets the value of b.
 // It implements the encoding.TextUnmarshaler interface.
@@ -215,7 +232,7 @@ func (b *ByteSize) UnmarshalText(text []byte) error {
 
 // Get returns the value of b.
 // It implements the flag.Getter interface.
-func (b *ByteSize) Get() interface{} { return b }
+func (b ByteSize) Get() interface{} { return b }
 
 // New returns a new ByteSize type set to s.
 func New(s float64) ByteSize {
@@ -223,12 +240,12 @@ func New(s float64) ByteSize {
 }
 
 // Format returns a string representation of b using the given format, unit, and unit style.
-func (b *ByteSize) Format(format string, unit string, longUnits bool) string {
+func (b ByteSize) Format(format string, unit string, longUnits bool) string {
 	return b.formatWithLocale(format, unit, longUnits, CurrentLocale)
 }
 
-// formatWithLocale returns a string representation using the specified locale&
-func (b *ByteSize) formatWithLocale(format string, unit string, longUnits bool, locale Locale) string {
+// formatWithLocale returns a string representation using the specified locale.
+func (b ByteSize) formatWithLocale(format string, unit string, longUnits bool, locale Locale) string {
 	units, ok := localizedUnits[locale]
 	if !ok {
 		locale = LocaleEN
@@ -239,18 +256,16 @@ func (b *ByteSize) formatWithLocale(format string, unit string, longUnits bool, 
 }
 
 // String returns the string form of b using the package global options
-func (b *ByteSize) String() string {
+func (b ByteSize) String() string {
 	return b.stringWithLocale(CurrentLocale)
 }
 
 // stringWithLocale returns the string form using the specified locale
-func (b *ByteSize) stringWithLocale(locale Locale) string {
+func (b ByteSize) stringWithLocale(locale Locale) string {
 	return b.formatWithLocale(Format, "", LongUnits, locale)
 }
 
-func (b *ByteSize) formatWithUnits(format string, unit string, longUnits bool, units unitDefinitions) string {
-	val := *b
-
+func (b ByteSize) formatWithUnits(format string, unit string, longUnits bool, units unitDefinitions) string {
 	var unitSize ByteSize
 	if unit != "" {
 		var ok bool
@@ -260,24 +275,24 @@ func (b *ByteSize) formatWithUnits(format string, unit string, longUnits bool, u
 		}
 	} else {
 		switch {
-		case val >= EB:
+		case b >= EB:
 			unitSize = EB
-		case val >= PB:
+		case b >= PB:
 			unitSize = PB
-		case val >= TB:
+		case b >= TB:
 			unitSize = TB
-		case val >= GB:
+		case b >= GB:
 			unitSize = GB
-		case val >= MB:
+		case b >= MB:
 			unitSize = MB
-		case val >= KB:
+		case b >= KB:
 			unitSize = KB
 		default:
 			unitSize = B
 		}
 	}
 
-	value := float64(val) / float64(unitSize)
+	value := float64(b) / float64(unitSize)
 
 	if longUnits {
 		unitStr := units.longUnits[unitSize]
